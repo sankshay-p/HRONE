@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkPulse — Power BI Analytics Dashboard</title>
+  <meta name="description"
+    content="Executive attendance analytics with weekly timing, work hour graphs, peer comparison and department statistics in Power BI style.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+   POWER BI DESIGN SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+    :root {
+      --pbi-canvas: #f2f2f2;
+      --pbi-card: #ffffff;
+      --pbi-card-border: #e0e0e0;
+      --pbi-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+      --pbi-card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.12);
+      --pbi-header-bg: #1b1b1b;
+      --pbi-header-text: #ffffff;
+      --pbi-tab-active: #f2c811;
+      --pbi-font: 'Inter', 'Segoe UI', -apple-system, system-ui, sans-serif;
+      --pbi-mono: 'JetBrains Mono', 'Consolas', monospace;
+      --pbi-blue: #118dff;
+      --pbi-teal: #12b5cb;
+      --pbi-orange: #e66c37;
+      --pbi-yellow: #f2c811;
+      --pbi-green: #37b54a;
+      --pbi-red: #e04856;
+      --pbi-purple: #8c52ff;
+      --pbi-text-primary: #252423;
+      --pbi-text-secondary: #605e5c;
+      --pbi-text-tertiary: #a19f9d;
+      --pbi-radius: 4px;
+      --pbi-radius-md: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--pbi-font);
+      background: var(--pbi-canvas);
+      color: var(--pbi-text-primary);
+      min-height: 100vh;
+      line-height: 1.45;
+      font-variant-numeric: tabular-nums;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══ RIBBON ═══ */
+    .pbi-ribbon {
+      background: var(--pbi-header-bg);
+      color: var(--pbi-header-text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 48px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .pbi-ribbon-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .pbi-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .pbi-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--pbi-yellow), #e6a700);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+      color: #1b1b1b;
+    }
+
+    .pbi-separator {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .pbi-report-title {
+      font-size: 0.85rem;
+      font-weight: 400;
+      opacity: 0.9;
+    }
+
+    .pbi-ribbon-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.78rem;
+    }
+
+    .pbi-status-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(55, 181, 74, 0.2);
+      border: 1px solid rgba(55, 181, 74, 0.4);
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #37b54a;
+    }
+
+    .pbi-status-dot {
+      width: 6px;
+      height: 6px;
+      background: #37b54a;
+      border-radius: 50%;
+      animation: pbi-pulse 2s ease infinite;
+    }
+
+    @keyframes pbi-pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.3;
+      }
+    }
+
+    /* ═══ PAGE TABS ═══ */
+    .pbi-page-tabs {
+      background: #fff;
+      border-bottom: 1px solid var(--pbi-card-border);
+      display: flex;
+      align-items: stretch;
+      padding: 0 20px;
+      height: 38px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .pbi-page-tab {
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: var(--pbi-text-secondary);
+      padding: 0 18px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pbi-page-tab:hover {
+      color: var(--pbi-text-primary);
+      background: rgba(0, 0, 0, 0.03);
+    }
+
+    .pbi-page-tab.active {
+      color: var(--pbi-text-primary);
+      border-bottom-color: var(--pbi-yellow);
+    }
+
+    /* ═══ SLICER BAR ═══ */
+    .pbi-slicer-bar {
+      background: #fff;
+      border-bottom: 1px solid var(--pbi-card-border);
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .pbi-slicer-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pbi-slicer-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--pbi-text-secondary);
+    }
+
+    .pbi-slicer-select,
+    .pbi-slicer-date {
+      background: #fff;
+      border: 1px solid #c8c8c8;
+      border-radius: var(--pbi-radius);
+      padding: 5px 10px;
+      font-family: var(--pbi-font);
+      font-size: 0.82rem;
+      color: var(--pbi-text-primary);
+      outline: none;
+      transition: border-color 0.15s;
+      cursor: pointer;
+    }
+
+    .pbi-slicer-select:focus,
+    .pbi-slicer-date:focus {
+      border-color: var(--pbi-blue);
+      box-shadow: 0 0 0 2px rgba(17, 141, 255, 0.15);
+    }
+
+    .pbi-quick-btns {
+      display: flex;
+      gap: 4px;
+    }
+
+    .pbi-quick-btn {
+      background: #f0f0f0;
+      border: 1px solid #d0d0d0;
+      border-radius: var(--pbi-radius);
+      padding: 4px 10px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--pbi-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .pbi-quick-btn:hover,
+    .pbi-quick-btn.active {
+      background: var(--pbi-blue);
+      color: #fff;
+      border-color: var(--pbi-blue);
+    }
+
+    .pbi-btn-refresh {
+      background: var(--pbi-blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--pbi-radius);
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pbi-btn-refresh:hover {
+      background: #0066cc;
+    }
+
+    .pbi-slicer-spacer {
+      flex: 1;
+    }
+
+    /* ═══ CANVAS ═══ */
+    .pbi-canvas {
+      padding: 16px 20px 40px;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    /* ═══ VISUAL CARD ═══ */
+    .pbi-visual {
+      background: var(--pbi-card);
+      border: 1px solid var(--pbi-card-border);
+      border-radius: var(--pbi-radius-md);
+      box-shadow: var(--pbi-card-shadow);
+      transition: box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.35s ease forwards;
+    }
+
+    .pbi-visual:hover {
+      box-shadow: var(--pbi-card-shadow-hover);
+    }
+
+    .pbi-visual-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 14px 18px 4px;
+    }
+
+    .pbi-visual-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--pbi-text-primary);
+    }
+
+    .pbi-visual-subtitle {
+      font-size: 0.7rem;
+      color: var(--pbi-text-tertiary);
+      margin-top: 2px;
+    }
+
+    .pbi-visual-body {
+      padding: 8px 18px 18px;
+    }
+
+    /* ═══ KPI ROW ═══ */
+    .pbi-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .pbi-kpi {
+      padding: 18px;
+    }
+
+    .pbi-kpi-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--pbi-text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .pbi-kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--pbi-text-primary);
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .pbi-kpi-unit {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--pbi-text-secondary);
+    }
+
+    .pbi-kpi-detail {
+      font-size: 0.75rem;
+      color: var(--pbi-text-tertiary);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pbi-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .pbi-badge-green {
+      background: rgba(55, 181, 74, 0.12);
+      color: #2a9d3e;
+    }
+
+    .pbi-badge-red {
+      background: rgba(224, 72, 86, 0.12);
+      color: #c43040;
+    }
+
+    .pbi-badge-blue {
+      background: rgba(17, 141, 255, 0.12);
+      color: #0078d4;
+    }
+
+    .pbi-badge-gray {
+      background: rgba(96, 94, 92, 0.12);
+      color: var(--pbi-text-secondary);
+    }
+
+    .pbi-kpi-ring-wrap {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .pbi-kpi-ring {
+      width: 52px;
+      height: 52px;
+      position: relative;
+    }
+
+    .pbi-kpi-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .pbi-kpi-ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--pbi-text-primary);
+    }
+
+    /* ═══ GRIDS ═══ */
+    .pbi-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 1100px) {
+      .pbi-grid-2col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ═══ CHART AREA ═══ */
+    .pbi-chart-area {
+      width: 100%;
+      position: relative;
+    }
+
+    svg.pbi-svg {
+      width: 100%;
+      overflow: visible;
+      display: block;
+    }
+
+    .pbi-tooltip {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      padding: 10px 14px;
+      border-radius: var(--pbi-radius);
+      font-size: 0.78rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      pointer-events: none;
+      z-index: 80;
+      opacity: 0;
+      transition: opacity 0.1s;
+      color: var(--pbi-text-primary);
+      max-width: 260px;
+      white-space: nowrap;
+    }
+
+    /* ═══ TABLE ═══ */
+    .pbi-table-wrap {
+      overflow-x: auto;
+    }
+
+    table.pbi-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    table.pbi-table th {
+      background: #f8f8f8;
+      border-bottom: 2px solid var(--pbi-card-border);
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 700;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--pbi-text-secondary);
+      white-space: nowrap;
+    }
+
+    table.pbi-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    table.pbi-table tr:hover td {
+      background: #f5f9ff;
+    }
+
+    table.pbi-table tr.pbi-row-highlight td {
+      background: rgba(17, 141, 255, 0.08);
+      font-weight: 600;
+    }
+
+    .pbi-cell-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pbi-cell-bar {
+      height: 10px;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .pbi-status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--pbi-radius);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .pbi-status-PRESENT {
+      background: #e6f5ea;
+      color: #1a7a2e;
+    }
+
+    .pbi-status-WFH {
+      background: #e0f4f8;
+      color: #0c7c99;
+    }
+
+    .pbi-status-ON_DUTY {
+      background: #f0e6ff;
+      color: #6b30c2;
+    }
+
+    .pbi-status-ABSENT {
+      background: #fde8ea;
+      color: #b52533;
+    }
+
+    .pbi-status-LEAVE {
+      background: #fde8ea;
+      color: #b52533;
+    }
+
+    .pbi-status-OFF {
+      background: #f4f4f4;
+      color: #a0a0a0;
+    }
+
+    .pbi-status-NOT_RECORDED {
+      background: #f4f4f4;
+      color: #a0a0a0;
+    }
+
+    /* ═══ TIMELINE ═══ */
+    .pbi-timeline-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid #f4f4f4;
+    }
+
+    .pbi-tl-label {
+      width: 80px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--pbi-text-primary);
+    }
+
+    .pbi-tl-label small {
+      display: block;
+      font-weight: 400;
+      font-size: 0.68rem;
+      color: var(--pbi-text-tertiary);
+    }
+
+    .pbi-tl-track {
+      flex: 1;
+      height: 22px;
+      background: #f8f8f8;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .pbi-tl-sched {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(17, 141, 255, 0.06);
+      border-left: 1.5px dashed rgba(17, 141, 255, 0.35);
+      border-right: 1.5px dashed rgba(17, 141, 255, 0.35);
+    }
+
+    .pbi-tl-actual {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--pbi-blue), var(--pbi-teal));
+    }
+
+    .pbi-tl-actual.late {
+      background: linear-gradient(90deg, var(--pbi-orange), var(--pbi-blue));
+    }
+
+    .pbi-tl-meta {
+      width: 80px;
+      text-align: right;
+      font-size: 0.72rem;
+      font-family: var(--pbi-mono);
+      color: var(--pbi-text-secondary);
+    }
+
+    /* ═══ SPECTRUM ═══ */
+    .pbi-spectrum-track {
+      height: 10px;
+      width: 100%;
+      background: linear-gradient(90deg, #e04856, #f2c811, #37b54a, #118dff);
+      border-radius: 10px;
+      position: relative;
+      margin: 18px 0;
+    }
+
+    .pbi-spectrum-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border: 3px solid var(--pbi-blue);
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .pbi-spectrum-marker::after {
+      content: attr(data-label);
+      position: absolute;
+      top: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--pbi-text-primary);
+      background: #fff;
+      padding: 1px 5px;
+      border-radius: 3px;
+      border: 1px solid #e0e0e0;
+      white-space: nowrap;
+    }
+
+    .pbi-spectrum-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--pbi-text-tertiary);
+    }
+
+    .pbi-stat-box {
+      background: #fafafa;
+      border: 1px solid #ececec;
+      border-radius: var(--pbi-radius);
+      padding: 12px 14px;
+      margin-top: 14px;
+    }
+
+    .pbi-stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 0.78rem;
+    }
+
+    .pbi-stat-row+.pbi-stat-row {
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .pbi-page {
+      display: none;
+    }
+
+    .pbi-page.active {
+      display: block;
+    }
+
+    .pbi-footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.72rem;
+      color: var(--pbi-text-tertiary);
+      border-top: 1px solid var(--pbi-card-border);
+      background: #fff;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="pbi-ribbon">
+    <div class="pbi-ribbon-left">
+      <div class="pbi-logo">
+        <div class="pbi-logo-icon">W</div><span>Clario WorkPulse</span>
+      </div>
+      <div class="pbi-separator"></div>
+      <span class="pbi-report-title">Employee Attendance &amp; Analytics Report</span>
+    </div>
+    <div class="pbi-ribbon-right">
+      <span style="opacity:0.7;">Last refresh: <span id="last-refresh-time">—</span></span>
+      <div class="pbi-status-chip"><span class="pbi-status-dot"></span><span>Live · MongoDB 7.0</span></div>
+    </div>
+  </header>
+
+  <nav class="pbi-page-tabs" role="tablist">
+    <button class="pbi-page-tab active" data-page="overview">📊 Overview</button>
+    <button class="pbi-page-tab" data-page="weekly">⏱️ Weekly Timing</button>
+    <button class="pbi-page-tab" data-page="comparison">👥 Peer Comparison</button>
+    <button class="pbi-page-tab" data-page="departments">🏢 Departments</button>
+  </nav>
+
+  <div class="pbi-slicer-bar">
+    <div class="pbi-slicer-group"><span class="pbi-slicer-label">Employee</span><select class="pbi-slicer-select"
+        id="sl-employee">
+        <option value="EMP0001">EMP0001 — Asha Rao</option>
+      </select></div>
+    <div class="pbi-slicer-group"><span class="pbi-slicer-label">Week Start</span><input type="date"
+        class="pbi-slicer-date" id="sl-week-start" value="2026-07-06"><button class="pbi-quick-btn"
+        id="btn-prev-wk">◀</button><button class="pbi-quick-btn" id="btn-next-wk">▶</button></div>
+    <div class="pbi-slicer-group"><span class="pbi-slicer-label">Month</span><input type="month" class="pbi-slicer-date"
+        id="sl-month" value="2026-07"></div>
+    <div class="pbi-quick-btns"><button class="pbi-quick-btn active" data-date="2026-07-06">Jul 06</button><button
+        class="pbi-quick-btn" data-date="2026-07-13">Jul 13</button></div>
+    <div class="pbi-slicer-spacer"></div>
+    <button class="pbi-btn-refresh" id="btn-refresh">↻ Refresh</button>
+  </div>
+
+  <main class="pbi-canvas">
+
+    <!-- ════ PAGE: OVERVIEW ════ -->
+    <section class="pbi-page active" id="page-overview">
+      <div class="pbi-kpi-row" id="kpi-row">
+        <div class="pbi-visual pbi-kpi">
+          <div class="pbi-kpi-label">Total Work Hours</div>
+          <div class="pbi-kpi-value"><span id="v-total-hrs">—</span><span class="pbi-kpi-unit">hrs</span></div>
+          <div class="pbi-kpi-detail">Amount: <strong id="v-total-amt" style="color:var(--pbi-blue);">—</strong> <span
+              class="pbi-badge pbi-badge-green" id="v-target-badge">—</span></div>
+        </div>
+        <div class="pbi-visual pbi-kpi">
+          <div class="pbi-kpi-label">Daily Average</div>
+          <div class="pbi-kpi-value"><span id="v-avg-hrs">—</span><span class="pbi-kpi-unit">hrs/day</span></div>
+          <div class="pbi-kpi-detail"><span id="v-days-present">—</span> <span class="pbi-badge pbi-badge-green"
+              id="v-pace-badge">—</span></div>
+        </div>
+        <div class="pbi-visual pbi-kpi">
+          <div class="pbi-kpi-label">Punctuality</div>
+          <div class="pbi-kpi-ring-wrap">
+            <div class="pbi-kpi-ring"><svg width="52" height="52" viewBox="0 0 52 52">
+                <circle cx="26" cy="26" r="22" fill="none" stroke="#f0f0f0" stroke-width="5" />
+                <circle cx="26" cy="26" r="22" fill="none" stroke="var(--pbi-green)" stroke-width="5"
+                  stroke-dasharray="138.23" stroke-dashoffset="0" stroke-linecap="round" id="ring-arc" />
+              </svg>
+              <div class="pbi-kpi-ring-label" id="v-punct-pct">—</div>
+            </div>
+            <div>
+              <div style="font-size:0.85rem;font-weight:700;" id="v-late-mins-display">—</div>
+              <div style="font-size:0.72rem;color:var(--pbi-text-tertiary);">Grace: 10 min (R2)</div>
+            </div>
+          </div>
+        </div>
+        <div class="pbi-visual pbi-kpi">
+          <div class="pbi-kpi-label">Department Rank</div>
+          <div class="pbi-kpi-value"><span id="v-dept-rank">—</span></div>
+          <div class="pbi-kpi-detail"><span id="v-dept-name-label">—</span> <span class="pbi-badge pbi-badge-blue"
+              id="v-company-rank">—</span></div>
+        </div>
+      </div>
+
+      <div class="pbi-grid-2col">
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Work Hours by Day</div>
+              <div class="pbi-visual-subtitle">Daily hours with shift target line</div>
+            </div>
+            <div style="display:flex;gap:10px;font-size:0.7rem;color:var(--pbi-text-tertiary);align-items:center;"><span
+                style="display:flex;align-items:center;gap:4px;"><span
+                  style="width:8px;height:8px;background:var(--pbi-blue);border-radius:2px;"></span>Present</span><span
+                style="display:flex;align-items:center;gap:4px;"><span
+                  style="width:8px;height:8px;background:var(--pbi-teal);border-radius:2px;"></span>WFH</span><span
+                style="display:flex;align-items:center;gap:4px;"><span
+                  style="width:8px;height:8px;background:var(--pbi-orange);border-radius:2px;"></span>Late</span></div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-chart-area" style="height:260px;"><svg class="pbi-svg weekly-bar-svg" id="svg-bar"
+                viewBox="0 0 680 260"></svg>
+              <div class="pbi-tooltip" id="tt-bar"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Shift Timing vs Actual Punch</div>
+              <div class="pbi-visual-subtitle">Gantt intervals (IST)</div>
+            </div><span class="pbi-badge pbi-badge-blue" id="v-shift-badge">—</span>
+          </div>
+          <div class="pbi-visual-body" id="timeline-body"></div>
+        </div>
+      </div>
+
+      <div class="pbi-visual" style="margin-bottom:16px;">
+        <div class="pbi-visual-header">
+          <div>
+            <div class="pbi-visual-title">Weekly Attendance Matrix</div>
+            <div class="pbi-visual-subtitle">Detailed punch-in/out log with computed metrics</div>
+          </div>
+        </div>
+        <div class="pbi-visual-body">
+          <div class="pbi-table-wrap">
+            <table class="pbi-table">
+              <thead>
+                <tr>
+                  <th>Day</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Punch In</th>
+                  <th>Punch Out</th>
+                  <th>Work Hours</th>
+                  <th>Amount of Time</th>
+                  <th>Late</th>
+                  <th>Overtime</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-weekly-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ PAGE: WEEKLY TIMING ════ -->
+    <section class="pbi-page" id="page-weekly">
+      <div class="pbi-grid-2col">
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Weekly Work Hours Trend</div>
+              <div class="pbi-visual-subtitle">Area chart: daily hours over the week</div>
+            </div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-chart-area" style="height:260px;"><svg class="pbi-svg" id="svg-area"
+                viewBox="0 0 680 260"></svg></div>
+          </div>
+        </div>
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Punctuality Trend</div>
+              <div class="pbi-visual-subtitle">Late minutes per day with grace threshold</div>
+            </div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-chart-area" style="height:260px;"><svg class="pbi-svg" id="svg-late"
+                viewBox="0 0 680 260"></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="pbi-visual">
+        <div class="pbi-visual-header">
+          <div>
+            <div class="pbi-visual-title">Time Utilization Gauge</div>
+            <div class="pbi-visual-subtitle">Actual vs scheduled weekly hours</div>
+          </div>
+        </div>
+        <div class="pbi-visual-body">
+          <div class="pbi-chart-area" style="height:180px;"><svg class="pbi-svg" id="svg-gauge"
+              viewBox="0 0 680 180"></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ PAGE: PEER COMPARISON ════ -->
+    <section class="pbi-page" id="page-comparison">
+      <div class="pbi-grid-2col">
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Employee vs Department vs Company</div>
+              <div class="pbi-visual-subtitle">Three-way metric benchmark</div>
+            </div>
+            <div style="display:flex;gap:10px;font-size:0.7rem;color:var(--pbi-text-tertiary);align-items:center;"><span
+                style="display:flex;align-items:center;gap:4px;"><span
+                  style="width:8px;height:8px;background:var(--pbi-blue);border-radius:2px;"></span>You</span><span
+                style="display:flex;align-items:center;gap:4px;"><span
+                  style="width:8px;height:8px;background:var(--pbi-teal);border-radius:2px;"></span>Dept</span><span
+                style="display:flex;align-items:center;gap:4px;"><span
+                  style="width:8px;height:8px;background:var(--pbi-purple);border-radius:2px;"></span>Company</span>
+            </div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-chart-area" style="height:280px;"><svg class="pbi-svg compare-bar-svg" id="svg-compare"
+                viewBox="0 0 680 280"></svg>
+              <div class="pbi-tooltip" id="tt-compare"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Company-Wide Hours Distribution</div>
+              <div class="pbi-visual-subtitle">Your position on the employee curve</div>
+            </div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-spectrum-track">
+              <div class="pbi-spectrum-marker" id="spectrum-marker" data-label="You" style="left:50%"></div>
+            </div>
+            <div class="pbi-spectrum-labels"><span id="sp-min">Min</span><span id="sp-q25">Q1</span><span
+                id="sp-med">Med</span><span id="sp-q75">Q3</span><span id="sp-max">Max</span></div>
+            <div class="pbi-stat-box">
+              <div class="pbi-stat-row"><span>Variance vs Department Avg</span><strong id="v-var-dept">—</strong></div>
+              <div class="pbi-stat-row"><span>Punctuality vs Department</span><strong id="v-late-dept">—</strong></div>
+              <div class="pbi-stat-row"><span>Company Percentile</span><strong id="v-percentile"
+                  style="color:var(--pbi-purple)">—</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pbi-visual">
+        <div class="pbi-visual-header">
+          <div>
+            <div class="pbi-visual-title">Department Peer Leaderboard</div>
+            <div class="pbi-visual-subtitle">Colleagues ranked by total work hours</div>
+          </div><span class="pbi-badge pbi-badge-gray" id="v-peer-count">—</span>
+        </div>
+        <div class="pbi-visual-body">
+          <div class="pbi-table-wrap">
+            <table class="pbi-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Employee</th>
+                  <th>Code</th>
+                  <th>Total Hours</th>
+                  <th>Amount of Time</th>
+                  <th>Days</th>
+                  <th>Avg/Day</th>
+                  <th>Late</th>
+                  <th>vs Dept Avg</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-peers-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ════ PAGE: DEPARTMENTS ════ -->
+    <section class="pbi-page" id="page-departments">
+      <div class="pbi-grid-2col">
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Department Avg Work Hours</div>
+              <div class="pbi-visual-subtitle">Horizontal bar by department</div>
+            </div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-chart-area"><svg class="pbi-svg" id="svg-dept" viewBox="0 0 680 320"></svg>
+              <div class="pbi-tooltip" id="tt-dept"></div>
+            </div>
+          </div>
+        </div>
+        <div class="pbi-visual">
+          <div class="pbi-visual-header">
+            <div>
+              <div class="pbi-visual-title">Department Late Minutes</div>
+              <div class="pbi-visual-subtitle">Total late minutes heat</div>
+            </div>
+          </div>
+          <div class="pbi-visual-body">
+            <div class="pbi-chart-area"><svg class="pbi-svg" id="svg-dept-late" viewBox="0 0 680 320"></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="pbi-visual">
+        <div class="pbi-visual-header">
+          <div>
+            <div class="pbi-visual-title">Department Summary Matrix</div>
+            <div class="pbi-visual-subtitle">Full metrics per department</div>
+          </div>
+        </div>
+        <div class="pbi-visual-body">
+          <div class="pbi-table-wrap">
+            <table class="pbi-table">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Headcount</th>
+                  <th>Present Days</th>
+                  <th>Avg Work Hours</th>
+                  <th>Late Count</th>
+                  <th>Total Late Mins</th>
+                  <th>Leave Count</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-dept-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <footer class="pbi-footer">WorkPulse Analytics · FastAPI + MongoDB · Pure BSON Aggregation Pipelines · Race-Safe
+    Concurrency</footer>
+
+  <script>
+    const S = { empCode: 'EMP0001', startDate: '2026-07-06', month: '2026-07', weeklyData: null, compareData: null, deptData: null, employees: [] };
+    const $ = id => document.getElementById(id);
+    const $$ = s => document.querySelectorAll(s);
+
+    async function init() { bindEvents(); await loadEmployees(); await refreshAll(); }
+
+    function bindEvents() {
+      $('sl-employee').onchange = e => { S.empCode = e.target.value; refreshAll(); };
+      $('sl-week-start').onchange = e => { S.startDate = e.target.value; refreshAll(); };
+      $('sl-month').onchange = e => { S.month = e.target.value; refreshAll(); };
+      $('btn-prev-wk').onclick = () => { const d = new Date(S.startDate); d.setDate(d.getDate() - 7); S.startDate = isoD(d); $('sl-week-start').value = S.startDate; refreshAll(); };
+      $('btn-next-wk').onclick = () => { const d = new Date(S.startDate); d.setDate(d.getDate() + 7); S.startDate = isoD(d); $('sl-week-start').value = S.startDate; refreshAll(); };
+      $('btn-refresh').onclick = refreshAll;
+      $$('.pbi-quick-btn[data-date]').forEach(b => { b.onclick = () => { $$('.pbi-quick-btn[data-date]').forEach(x => x.classList.remove('active')); b.classList.add('active'); S.startDate = b.dataset.date; $('sl-week-start').value = S.startDate; refreshAll(); }; });
+      $$('.pbi-page-tab').forEach(tab => { tab.onclick = () => { $$('.pbi-page-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); $$('.pbi-page').forEach(p => p.classList.remove('active')); $('page-' + tab.dataset.page).classList.add('active'); }; });
+    }
+
+    function isoD(d) { return d.toISOString().split('T')[0]; }
+
+    async function loadEmployees() {
+      try { const r = await fetch('/employees?page=1&page_size=100'); if (!r.ok) return; const d = await r.json(); S.employees = d.items || []; $('sl-employee').innerHTML = S.employees.map(e => `<option value="${e.emp_code}" ${e.emp_code === S.empCode ? 'selected' : ''}>${e.emp_code} — ${e.name} (${e.department})</option>`).join(''); } catch (e) { console.error(e); }
+    }
+
+    async function refreshAll() {
+      $('last-refresh-time').textContent = new Date().toLocaleTimeString();
+      S.month = S.startDate.slice(0, 7) || '2026-07'; $('sl-month').value = S.month;
+      const [wR, cR, dR] = await Promise.all([fetch(`/analytics/employees/${S.empCode}/weekly?start_date=${S.startDate}`).catch(() => null), fetch(`/analytics/employees/${S.empCode}/comparison?month=${S.month}`).catch(() => null), fetch(`/analytics/departments/summary?month=${S.month}`).catch(() => null)]);
+      if (wR?.ok) { S.weeklyData = await wR.json(); renderWeekly(); }
+      if (cR?.ok) { S.compareData = await cR.json(); renderComparison(); }
+      if (dR?.ok) { S.deptData = await dR.json(); renderDepartments(); }
+    }
+
+    function renderWeekly() {
+      const w = S.weeklyData; if (!w) return; const sm = w.summary;
+      $('v-total-hrs').textContent = (sm.total_work_hours ?? 0).toFixed(2);
+      $('v-total-amt').textContent = sm.total_time_formatted || '0h 00m';
+      $('v-target-badge').textContent = `${(sm.target_completion_pct ?? 0).toFixed(1)}% of ${sm.scheduled_weekly_hours}h`;
+      $('v-avg-hrs').textContent = (sm.avg_daily_work_hours ?? 0).toFixed(2);
+      $('v-days-present').textContent = `${sm.days_present} day(s)`;
+      const pace = (sm.avg_daily_work_hours || 0) - (sm.scheduled_shift_hours || 9);
+      const pb = $('v-pace-badge'); pb.textContent = `${pace >= 0 ? '+' : ''}${pace.toFixed(2)}h`; pb.className = 'pbi-badge ' + (pace >= 0 ? 'pbi-badge-green' : 'pbi-badge-red');
+      const pP = sm.on_time_rate_pct ?? 100; $('v-punct-pct').textContent = pP.toFixed(0) + '%';
+      const circ = 2 * Math.PI * 22; $('ring-arc').setAttribute('stroke-dashoffset', circ * (1 - pP / 100)); $('ring-arc').setAttribute('stroke', pP >= 80 ? 'var(--pbi-green)' : 'var(--pbi-red)');
+      $('v-late-mins-display').textContent = sm.total_late_minutes > 0 ? sm.total_late_minutes + ' mins late' : '0 mins late'; $('v-late-mins-display').style.color = sm.total_late_minutes > 0 ? 'var(--pbi-red)' : 'var(--pbi-green)';
+      $('v-shift-badge').textContent = `${w.shift_start} – ${w.shift_end}`;
+      renderBarChart(w); renderTimeline(w); renderWeeklyTable(w); renderAreaChart(w); renderLateChart(w); renderGauge(w);
+    }
+
+    function renderBarChart(w) {
+      const svg = $('svg-bar'), tt = $('tt-bar'); svg.innerHTML = ''; const W = 680, H = 260, pad = { t: 25, r: 20, b: 36, l: 42 }, cW = W - pad.l - pad.r, cH = H - pad.t - pad.b, days = w.days || [], maxV = Math.max(12, ...days.map(d => d.work_hours || 0)) + 1, colW = cW / 7, barW = 36;
+      for (let i = 0; i <= 4; i++) { const v = (maxV / 4) * i, y = pad.t + cH - (v / maxV) * cH; addLine(svg, pad.l, y, W - pad.r, y, '#e8e8e8', '1'); addText(svg, pad.l - 6, y + 4, v.toFixed(0) + 'h', '10', '#a0a0a0', 'end'); }
+      const tH = w.summary.scheduled_shift_hours || 9, tY = pad.t + cH - (tH / maxV) * cH; addLine(svg, pad.l, tY, W - pad.r, tY, 'var(--pbi-blue)', '1', '4 3'); addText(svg, W - pad.r, tY - 5, `Target ${tH}h`, '9', 'var(--pbi-blue)', 'end', '600');
+      days.forEach((d, i) => {
+        const cx = pad.l + i * colW + colW / 2, hv = d.work_hours || 0, bH = Math.max(2, (hv / maxV) * cH), by = pad.t + cH - bH; let fill = 'var(--pbi-blue)'; if (d.status === 'WFH') fill = 'var(--pbi-teal)'; else if (d.status === 'ON_DUTY') fill = 'var(--pbi-purple)'; else if (d.late_minutes > 0) fill = 'var(--pbi-orange)'; else if (d.is_weekend || d.status === 'OFF' || d.status === 'NOT_RECORDED') fill = '#d8d8d8';
+        const r = addRect(svg, cx - barW / 2, by, barW, bH, fill, '4'); r.style.cursor = 'pointer'; r.style.transition = 'opacity 0.15s';
+        r.onmouseenter = () => { r.style.opacity = '0.75'; tt.style.opacity = '1'; tt.innerHTML = `<strong>${d.day_name} ${d.date}</strong><br>Status: <span style="color:${fill};font-weight:700">${d.status}</span><br>Hours: <strong>${hv.toFixed(2)}h</strong> (${d.amount_of_time})<br>In: ${d.punch_in_time || '—'} | Out: ${d.punch_out_time || '—'}${d.late_minutes > 0 ? '<br><span style="color:var(--pbi-red)">Late: ' + d.late_minutes + 'm</span>' : ''}`; };
+        r.onmousemove = ev => { const b = svg.getBoundingClientRect(); tt.style.left = (ev.clientX - b.left + 12) + 'px'; tt.style.top = (ev.clientY - b.top - 10) + 'px'; };
+        r.onmouseleave = () => { r.style.opacity = '1'; tt.style.opacity = '0'; };
+        if (hv > 0) addText(svg, cx, by - 5, d.amount_of_time, '10', 'var(--pbi-text-primary)', 'middle', '700');
+        addText(svg, cx, H - pad.b + 14, d.day_name.slice(0, 3), '10', d.is_weekend ? '#b0b0b0' : '#555', 'middle', '600'); addText(svg, cx, H - pad.b + 26, d.date.slice(5), '8', '#b0b0b0', 'middle');
+      });
+    }
+
+    function renderAreaChart(w) {
+      const svg = $('svg-area'); svg.innerHTML = ''; const W = 680, H = 260, pad = { t: 25, r: 20, b: 36, l: 42 }, cW = W - pad.l - pad.r, cH = H - pad.t - pad.b, days = w.days || [], maxV = Math.max(12, ...days.map(d => d.work_hours || 0)) + 1, colW = cW / 7;
+      for (let i = 0; i <= 4; i++) { const v = (maxV / 4) * i, y = pad.t + cH - (v / maxV) * cH; addLine(svg, pad.l, y, W - pad.r, y, '#e8e8e8', '1'); addText(svg, pad.l - 6, y + 4, v.toFixed(0) + 'h', '10', '#a0a0a0', 'end'); }
+      let path = '', first = true; days.forEach((d, i) => { const cx = pad.l + i * colW + colW / 2, hv = d.work_hours || 0, y = pad.t + cH - (hv / maxV) * cH; path += (first ? 'M' : 'L') + cx + ',' + y; first = false; addText(svg, cx, H - pad.b + 14, d.day_name.slice(0, 3), '10', '#555', 'middle', '600'); });
+      const lastCx = pad.l + 6 * colW + colW / 2, firstCx = pad.l + colW / 2;
+      const ap = document.createElementNS('http://www.w3.org/2000/svg', 'path'); ap.setAttribute('d', path + `L${lastCx},${pad.t + cH}L${firstCx},${pad.t + cH}Z`); ap.setAttribute('fill', 'rgba(17,141,255,0.12)'); svg.appendChild(ap);
+      const lp = document.createElementNS('http://www.w3.org/2000/svg', 'path'); lp.setAttribute('d', path); lp.setAttribute('fill', 'none'); lp.setAttribute('stroke', 'var(--pbi-blue)'); lp.setAttribute('stroke-width', '2.5'); lp.setAttribute('stroke-linejoin', 'round'); svg.appendChild(lp);
+      days.forEach((d, i) => { const cx = pad.l + i * colW + colW / 2, hv = d.work_hours || 0, y = pad.t + cH - (hv / maxV) * cH; const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); c.setAttribute('cx', cx); c.setAttribute('cy', y); c.setAttribute('r', '4'); c.setAttribute('fill', hv > 0 ? 'var(--pbi-blue)' : '#d0d0d0'); c.setAttribute('stroke', '#fff'); c.setAttribute('stroke-width', '2'); svg.appendChild(c); if (hv > 0) addText(svg, cx, y - 10, hv.toFixed(1) + 'h', '9', 'var(--pbi-blue)', 'middle', '700'); });
+    }
+
+    function renderLateChart(w) {
+      const svg = $('svg-late'); svg.innerHTML = ''; const W = 680, H = 260, pad = { t: 25, r: 20, b: 36, l: 42 }, cW = W - pad.l - pad.r, cH = H - pad.t - pad.b, days = w.days || [], maxL = Math.max(20, ...days.map(d => d.late_minutes || 0)) + 5, colW = cW / 7, barW = 30;
+      for (let i = 0; i <= 4; i++) { const v = (maxL / 4) * i, y = pad.t + cH - (v / maxL) * cH; addLine(svg, pad.l, y, W - pad.r, y, '#e8e8e8', '1'); addText(svg, pad.l - 6, y + 4, v.toFixed(0) + 'm', '10', '#a0a0a0', 'end'); }
+      const gy = pad.t + cH - (10 / maxL) * cH; addLine(svg, pad.l, gy, W - pad.r, gy, 'var(--pbi-orange)', '1', '4 3'); addText(svg, W - pad.r, gy - 5, 'Grace (10m)', '9', 'var(--pbi-orange)', 'end', '600');
+      days.forEach((d, i) => { const cx = pad.l + i * colW + colW / 2, lv = d.late_minutes || 0, bH = Math.max(1, (lv / maxL) * cH), by = pad.t + cH - bH, fill = lv > 0 ? 'var(--pbi-red)' : 'var(--pbi-green)'; addRect(svg, cx - barW / 2, by, barW, bH, fill, '3'); if (lv > 0) addText(svg, cx, by - 5, lv + 'm', '10', 'var(--pbi-red)', 'middle', '700'); addText(svg, cx, H - pad.b + 14, d.day_name.slice(0, 3), '10', '#555', 'middle', '600'); });
+    }
+
+    function renderGauge(w) {
+      const svg = $('svg-gauge'); svg.innerHTML = ''; const sm = w.summary, sched = sm.scheduled_weekly_hours || 45, actual = sm.total_work_hours || 0, pct = Math.min(100, Math.max(0, (actual / sched) * 100)), cx = 340, cy = 140, r = 100;
+      addArc(svg, cx, cy, r, -Math.PI, 0, '#ececec', 12); addArc(svg, cx, cy, r, -Math.PI, -Math.PI + pct / 100 * Math.PI, pct > 80 ? 'var(--pbi-green)' : pct > 50 ? 'var(--pbi-blue)' : 'var(--pbi-orange)', 12);
+      addText(svg, cx, cy - 10, pct.toFixed(1) + '%', '28', 'var(--pbi-text-primary)', 'middle', '800'); addText(svg, cx, cy + 15, 'of ' + sched + 'h scheduled', '11', 'var(--pbi-text-secondary)', 'middle'); addText(svg, cx, cy + 32, `Actual: ${actual.toFixed(2)}h (${sm.total_time_formatted})`, '11', 'var(--pbi-blue)', 'middle', '600');
+      addText(svg, cx - r - 10, cy + 10, '0h', '10', '#a0a0a0', 'end'); addText(svg, cx + r + 10, cy + 10, sched + 'h', '10', '#a0a0a0', 'start');
+    }
+
+    function addArc(svg, cx, cy, r, sA, eA, stroke, sw) { const sx = cx + r * Math.cos(sA), sy = cy + r * Math.sin(sA), ex = cx + r * Math.cos(eA), ey = cy + r * Math.sin(eA), la = (eA - sA) > Math.PI ? 1 : 0; const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', `M${sx},${sy} A${r},${r} 0 ${la} 1 ${ex},${ey}`); p.setAttribute('fill', 'none'); p.setAttribute('stroke', stroke); p.setAttribute('stroke-width', sw); p.setAttribute('stroke-linecap', 'round'); svg.appendChild(p); }
+
+    function renderTimeline(w) {
+      const el = $('timeline-body'); el.innerHTML = ''; const days = w.days || [], dS = 6 * 60, dSpan = 16 * 60;
+      const [sh, sm2] = (w.shift_start || '09:30').split(':').map(Number), [eh, em2] = (w.shift_end || '18:30').split(':').map(Number);
+      const sL = ((sh * 60 + sm2) - dS) / dSpan * 100, sW = ((eh * 60 + em2) - (sh * 60 + sm2)) / dSpan * 100;
+      days.forEach(d => {
+        const row = document.createElement('div'); row.className = 'pbi-timeline-row'; let aStyle = 'display:none;', isLate = d.late_minutes > 0;
+        if (d.punch_in_time && d.punch_out_time) { const [ih, im] = d.punch_in_time.split(':').map(Number), [oh, om] = d.punch_out_time.split(':').map(Number); const inM = ih * 60 + im - dS, outM = oh * 60 + om - dS; const lP = Math.max(0, Math.min(100, inM / dSpan * 100)), wP = Math.max(2, Math.min(100 - lP, (outM - inM) / dSpan * 100)); aStyle = `left:${lP}%;width:${wP}%`; }
+        row.innerHTML = `<div class="pbi-tl-label">${d.day_name.slice(0, 3)}<small>${d.date.slice(5)}</small></div><div class="pbi-tl-track"><div class="pbi-tl-sched" style="left:${sL}%;width:${sW}%"></div><div class="pbi-tl-actual ${isLate ? 'late' : ''}" style="${aStyle}"></div></div><div class="pbi-tl-meta">${d.work_hours > 0 ? `<span style="color:var(--pbi-blue);font-weight:600">${d.amount_of_time}</span>` : `<span style="color:#b0b0b0">${d.status}</span>`}</div>`; el.appendChild(row);
+      });
+    }
+
+    function renderWeeklyTable(w) {
+      const tb = $('tbl-weekly-body'); tb.innerHTML = ''; (w.days || []).forEach(d => { const tr = document.createElement('tr'); tr.innerHTML = `<td><strong>${d.day_name}</strong></td><td>${d.date}</td><td><span class="pbi-status pbi-status-${d.status}">${d.status}</span></td><td style="font-family:var(--pbi-mono);font-size:0.78rem">${d.punch_in_time || '—'}</td><td style="font-family:var(--pbi-mono);font-size:0.78rem">${d.punch_out_time || '—'}</td><td><strong>${d.work_hours != null ? d.work_hours.toFixed(2) + 'h' : '—'}</strong></td><td style="color:var(--pbi-blue);font-weight:600">${d.amount_of_time || '—'}</td><td style="color:${d.late_minutes > 0 ? 'var(--pbi-red)' : 'var(--pbi-green)'}">${d.late_minutes || 0}m</td><td style="color:${d.overtime_minutes > 0 ? 'var(--pbi-orange)' : '#b0b0b0'}">${d.overtime_minutes || 0}m</td>`; tb.appendChild(tr); });
+    }
+
+    function renderComparison() {
+      const c = S.compareData; if (!c) return; const em = c.employee_metrics, db = c.department_benchmark, cb = c.company_benchmark;
+      $('v-dept-rank').textContent = '#' + em.rank_in_department; $('v-dept-name-label').textContent = `in ${db.department} (${db.headcount})`; $('v-company-rank').textContent = 'Company #' + em.rank_in_company;
+      const dist = cb.distribution || { min: 0, q25: 0, median: 0, q75: 0, max: 1 }; $('sp-min').textContent = `Min: ${dist.min.toFixed(1)}h`; $('sp-q25').textContent = `Q1: ${dist.q25.toFixed(1)}h`; $('sp-med').textContent = `Med: ${dist.median.toFixed(1)}h`; $('sp-q75').textContent = `Q3: ${dist.q75.toFixed(1)}h`; $('sp-max').textContent = `Max: ${dist.max.toFixed(1)}h`;
+      const range = Math.max(0.01, dist.max - dist.min), pct = Math.max(2, Math.min(98, ((em.total_work_hours - dist.min) / range) * 100)); $('spectrum-marker').style.left = pct + '%'; $('spectrum-marker').setAttribute('data-label', `You: ${em.total_work_hours.toFixed(2)}h`);
+      const vd = db.hours_diff; $('v-var-dept').textContent = (vd >= 0 ? '+' : '') + vd.toFixed(2) + ' hrs'; $('v-var-dept').style.color = vd >= 0 ? 'var(--pbi-green)' : 'var(--pbi-red)';
+      $('v-late-dept').textContent = em.total_late_minutes > 0 ? em.total_late_minutes + ' mins' : '0 mins (Flawless)';
+      $('v-percentile').textContent = cb.percentile_rank.toFixed(1) + 'th'; $('v-peer-count').textContent = db.headcount + ' peers';
+      renderCompareChart(c);
+      const tb = $('tbl-peers-body'); tb.innerHTML = ''; (db.peers || []).forEach(p => {
+        const diff = p.total_work_hours - (db.avg_work_hours || 0); const tr = document.createElement('tr'); if (p.is_current) tr.className = 'pbi-row-highlight';
+        tr.innerHTML = `<td><strong style="color:${p.rank <= 3 ? 'var(--pbi-orange)' : '#999'}">#${p.rank}</strong></td><td><strong>${p.name}</strong>${p.is_current ? ' <span class="pbi-badge pbi-badge-blue">You</span>' : ''}</td><td style="font-family:var(--pbi-mono)">${p.emp_code}</td><td><div class="pbi-cell-bar-wrap"><div class="pbi-cell-bar" style="width:${Math.max(2, p.total_work_hours / 20 * 100)}%;background:var(--pbi-blue)"></div><strong>${p.total_work_hours.toFixed(2)}h</strong></div></td><td style="color:var(--pbi-blue);font-weight:600">${p.amount_of_time}</td><td>${p.days_present}</td><td>${p.avg_daily_work_hours ? p.avg_daily_work_hours.toFixed(2) + 'h' : '—'}</td><td style="color:${p.total_late_minutes > 0 ? 'var(--pbi-red)' : 'var(--pbi-green)'}">${p.total_late_minutes}m</td><td style="color:${diff >= 0 ? 'var(--pbi-green)' : 'var(--pbi-red)'};font-weight:600">${diff >= 0 ? '+' : ''}${diff.toFixed(2)}h</td>`; tb.appendChild(tr);
+      });
+    }
+
+    function renderCompareChart(c) {
+      const svg = $('svg-compare'), tt = $('tt-compare'); svg.innerHTML = ''; const W = 680, H = 280, pad = { t: 30, r: 20, b: 40, l: 50 }, cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+      const em = c.employee_metrics, db = c.department_benchmark, cb = c.company_benchmark;
+      const cats = [{ name: 'Total Hours', emp: em.total_work_hours || 0, dept: db.avg_work_hours || 0, comp: cb.avg_work_hours || 0 }, { name: 'Avg/Day', emp: em.avg_daily_work_hours || 0, dept: db.headcount > 0 ? (db.avg_work_hours / db.headcount) : 0, comp: 8.5 }, { name: 'Late Min', emp: em.total_late_minutes || 0, dept: db.avg_late_minutes || 0, comp: 15 }];
+      const gW = cW / cats.length, bW = 22, maxV = Math.max(20, ...cats.flatMap(ca => [ca.emp, ca.dept, ca.comp])) + 5;
+      for (let i = 0; i <= 4; i++) { const v = (maxV / 4) * i, y = pad.t + cH - (v / maxV) * cH; addLine(svg, pad.l, y, W - pad.r, y, '#e8e8e8', '1'); addText(svg, pad.l - 6, y + 4, v.toFixed(0), '10', '#a0a0a0', 'end'); }
+      const colors = ['var(--pbi-blue)', 'var(--pbi-teal)', 'var(--pbi-purple)'], labels = ['You', 'Dept', 'Company'];
+      cats.forEach((cat, gi) => {
+        const gcx = pad.l + gi * gW + gW / 2; addText(svg, gcx, H - pad.b + 18, cat.name, '10', '#555', 'middle', '600');
+        [cat.emp, cat.dept, cat.comp].forEach((v, bi) => {
+          const bx = gcx - 36 + bi * (bW + 6), bH = Math.max(2, (v / maxV) * cH), by = pad.t + cH - bH; const r = addRect(svg, bx, by, bW, bH, colors[bi], '3'); r.style.cursor = 'pointer';
+          r.onmouseenter = () => { tt.style.opacity = '1'; tt.innerHTML = `<strong>${cat.name}</strong><br><span style="color:${colors[bi]}">${labels[bi]}</span>: <strong>${v.toFixed(2)}</strong>`; }; r.onmousemove = ev => { const b = svg.getBoundingClientRect(); tt.style.left = (ev.clientX - b.left + 10) + 'px'; tt.style.top = (ev.clientY - b.top - 10) + 'px'; }; r.onmouseleave = () => { tt.style.opacity = '0'; };
+          addText(svg, bx + bW / 2, by - 5, v.toFixed(1), '9', colors[bi], 'middle', '700');
+        });
+      });
+    }
+
+    function renderDepartments() {
+      const d = S.deptData; if (!d) return; const items = d.items || [];
+      const svg = $('svg-dept'), tt = $('tt-dept'); svg.innerHTML = ''; const W = 680, rowH = 32, pad = { t: 20, r: 20, b: 10, l: 120 }, cW = W - pad.l - pad.r;
+      const H2 = pad.t + items.length * rowH + pad.b; svg.setAttribute('viewBox', `0 0 ${W} ${H2}`);
+      const maxH = Math.max(12, ...items.map(i => i.avg_work_hours || 0));
+      items.forEach((it, i) => {
+        const y = pad.t + i * rowH, bW = Math.max(3, ((it.avg_work_hours || 0) / maxH) * cW); addText(svg, pad.l - 8, y + rowH / 2 + 4, it.department, '11', 'var(--pbi-text-primary)', 'end', '600'); const r = addRect(svg, pad.l, y + 6, bW, rowH - 12, 'var(--pbi-blue)', '3'); r.style.cursor = 'pointer';
+        r.onmouseenter = () => { tt.style.opacity = '1'; tt.innerHTML = `<strong>${it.department}</strong><br>Headcount: ${it.headcount}<br>Avg Hours: ${(it.avg_work_hours || 0).toFixed(2)}h<br>Late: ${it.total_late_minutes}m (${it.late_count} events)`; }; r.onmousemove = ev => { const b = svg.getBoundingClientRect(); tt.style.left = (ev.clientX - b.left + 10) + 'px'; tt.style.top = (ev.clientY - b.top - 10) + 'px'; }; r.onmouseleave = () => { tt.style.opacity = '0'; };
+        addText(svg, pad.l + bW + 6, y + rowH / 2 + 4, (it.avg_work_hours || 0).toFixed(1) + 'h', '10', 'var(--pbi-blue)', 'start', '700');
+      });
+
+      const svg2 = $('svg-dept-late'); svg2.innerHTML = ''; const maxL = Math.max(20, ...items.map(i => i.total_late_minutes || 0)) + 5; svg2.setAttribute('viewBox', `0 0 ${W} ${H2}`);
+      items.forEach((it, i) => { const y = pad.t + i * rowH, lv = it.total_late_minutes || 0, bW2 = Math.max(2, (lv / maxL) * cW), fill = lv > 100 ? 'var(--pbi-red)' : lv > 30 ? 'var(--pbi-orange)' : 'var(--pbi-green)'; addText(svg2, pad.l - 8, y + rowH / 2 + 4, it.department, '11', 'var(--pbi-text-primary)', 'end', '600'); addRect(svg2, pad.l, y + 6, bW2, rowH - 12, fill, '3'); addText(svg2, pad.l + bW2 + 6, y + rowH / 2 + 4, lv + 'm', '10', fill, 'start', '700'); });
+
+      const tb = $('tbl-dept-body'); tb.innerHTML = ''; items.forEach(it => { const tr = document.createElement('tr'); tr.innerHTML = `<td><strong>${it.department}</strong></td><td>${it.headcount}</td><td>${it.present_days}</td><td><div class="pbi-cell-bar-wrap"><div class="pbi-cell-bar" style="width:${Math.max(5, (it.avg_work_hours || 0) / 12 * 100)}%;background:var(--pbi-blue)"></div>${(it.avg_work_hours || 0).toFixed(2)}h</div></td><td>${it.late_count}</td><td style="color:${it.total_late_minutes > 50 ? 'var(--pbi-red)' : 'var(--pbi-green)'}">${it.total_late_minutes}m</td><td>${it.leave_count}</td>`; tb.appendChild(tr); });
+    }
+
+    function addLine(svg, x1, y1, x2, y2, stroke, sw, dash) { const l = document.createElementNS('http://www.w3.org/2000/svg', 'line'); l.setAttribute('x1', x1); l.setAttribute('y1', y1); l.setAttribute('x2', x2); l.setAttribute('y2', y2); l.setAttribute('stroke', stroke); l.setAttribute('stroke-width', sw || '1'); if (dash) l.setAttribute('stroke-dasharray', dash); svg.appendChild(l); return l; }
+    function addText(svg, x, y, txt, size, fill, anchor, fw) { const t = document.createElementNS('http://www.w3.org/2000/svg', 'text'); t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('font-size', size || '10'); t.setAttribute('fill', fill || '#333'); if (anchor) t.setAttribute('text-anchor', anchor); if (fw) t.setAttribute('font-weight', fw); t.textContent = txt; svg.appendChild(t); return t; }
+    function addRect(svg, x, y, w, h, fill, rx) { const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect'); r.setAttribute('x', x); r.setAttribute('y', y); r.setAttribute('width', w); r.setAttribute('height', h); r.setAttribute('fill', fill); if (rx) r.setAttribute('rx', rx); svg.appendChild(r); return r; }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+
+</html>
